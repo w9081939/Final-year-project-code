@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+      .row {
+        display: flex;
+        justify-content: space-between;
+      }
+      .container {
+        width: 600px;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="container">
+      <div class="row" id="bruteforce-result">
+        Total number of graphs analysed by brute force algorithm: <span class='text'>Loading...</span>
+      </div>
+      <div class="row" id="mbruteforce-result">
+        Total number of graphs analysed by modified brute force algorithm: <span class='text'>Loading...</span>
+      </div>
+      <div class="row" id="percentage-improvement">
+        Performance improvement: <span class='text'>Loading...</span>
+      </div>
+    </div>
+
+    <script type="module">
+      import * as $C from 'https://cdn.jsdelivr.net/npm/js-combinatorics@1.5.6/combinatorics.min.js';
+      window.Combinatorics = $C;
+    </script>
+    <script src="helperFunctions.js" charset="utf-8"></script>
+    <script src="vertex.js" charset="utf-8"></script>
+    <script src="graph.js" charset="utf-8"></script>
+    <script src="binomialRandomGraphGenerator.js" charset="utf-8"></script>
+    <script src="uniformRandomGraphGenerator.js" charset="utf-8"></script>
+    <script src="bruteforceAlgorithm.js" charset="utf-8"></script>
+    <script src="modifiedBruteforceAlgorithm.js" charset="utf-8"></script>
+    <script src="deconstructionAlgorithm.js" charset="utf-8"></script>
+    <script src="constructionAlgorithm.js" charset="utf-8"></script>
+    <script type="text/javascript">
+
+      let n = 6;
+
+      window.addEventListener('load', function () {
+        graphs = getAllPossibleGraphs(n); //Generates all possible graphs on n vertices (n is set to 6 by default, any higher and it will take a long time to process)
+
+        numberOfGraphsCheckedByModifiedBruteforceAlgorithm = []; //Preallocates space to store the number of graphs checked by the modified bruteforce algorithm for each graph
+
+        //For each graph
+        graphs.forEach((graph, i) => {
+          graphsChecked = mbruteforce(graph, true); //Check how many graphs have been analysed by the modified bruteforce algorithm before it finds a solution
+          numberOfGraphsCheckedByModifiedBruteforceAlgorithm.push(graphsChecked); //Add it to the array
+        });
+
+        //Once the loop is over:
+        totalGraphsSearchedByBruteforceAlgorithm = graphs.length*getNumberOfGraphsSearchedByBruteforceAlgorithm(n); //Compute the number of graphs searched by the bruteforce algorithm
+        //Compute the number of graphs searched by the modified bruteforce algorithm by summing the elements of the array
+        totalGraphsSearchedByModifiedBruteforceAlgorithm = numberOfGraphsCheckedByModifiedBruteforceAlgorithm.reduce((a, b) => a + b);
+
+        //This code just displays the findings on the web page
+        document.querySelector("#bruteforce-result .text").innerText = totalGraphsSearchedByBruteforceAlgorithm.toLocaleString();
+        document.querySelector("#mbruteforce-result .text").innerText = totalGraphsSearchedByModifiedBruteforceAlgorithm.toLocaleString();
+        document.querySelector("#percentage-improvement .text").innerText = ((totalGraphsSearchedByBruteforceAlgorithm / totalGraphsSearchedByModifiedBruteforceAlgorithm)*100).toFixed(2) + "%"
+      });
+
+    </script>
+  </body>
+</html>

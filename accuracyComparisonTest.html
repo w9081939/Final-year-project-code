@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+      .row {
+        display: flex;
+        justify-content: space-between;
+      }
+      .container {
+        width: 600px;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="container">
+      <div class="row" id="mbruteforce-result">
+        Number of errors made by modified brute force algorithm: <span class='text'>Loading...</span>
+      </div>
+      <div class="row" id="deconstruction-result">
+        Number of errors made by deconstruction algorithm: <span class='text'>Loading...</span>
+      </div>
+      <div class="row" id="construction-result">
+        Number of errors made by construction algorithm: <span class='text'>Loading...</span>
+      </div>
+    </div>
+
+    <script type="module">
+      import * as $C from 'https://cdn.jsdelivr.net/npm/js-combinatorics@1.5.6/combinatorics.min.js';
+      window.Combinatorics = $C;
+    </script>
+    <script src="helperFunctions.js" charset="utf-8"></script>
+    <script src="vertex.js" charset="utf-8"></script>
+    <script src="graph.js" charset="utf-8"></script>
+    <script src="binomialRandomGraphGenerator.js" charset="utf-8"></script>
+    <script src="uniformRandomGraphGenerator.js" charset="utf-8"></script>
+    <script src="bruteforceAlgorithm.js" charset="utf-8"></script>
+    <script src="modifiedBruteforceAlgorithm.js" charset="utf-8"></script>
+    <script src="deconstructionAlgorithm.js" charset="utf-8"></script>
+    <script src="constructionAlgorithm.js" charset="utf-8"></script>
+    <script type="text/javascript">
+
+      let n = 6;
+
+      window.addEventListener('load', function () {
+        graphs = getAllPossibleGraphs(n); //Generates all possible graphs on n vertices (n is set to 6 by default, any higher and it will take a long time to process)
+
+        //Preallocates space to store the errors
+        discrepancies = {
+          mbruteforce: [], //Preallocates space to store the number of incorrect solutions found by the modified bruteforce algorithm
+          deconstruct: [], //Preallocates space to store the number of incorrect solutions found by the deconstruction algorithm
+          construct: []    //Preallocates space to store the number of incorrect solutions found by the construction algorithm
+        };
+
+        //For each graph
+        graphs.forEach((graph, i) => {
+          let bruteforceSolution = bruteforce(graph); //Calculate the bruteforce solution (this is used as the lable/correct solution for the graph)
+          let mbruteforceSolution = mbruteforce(graph); //Calculate the modified bruteforce solution
+          let deconstructSolution = deconstruct(new Graph(structuredClone(graph))); //Calculate the deconstruction solution
+          let constructSolution = construct(graph); //Calculate the construction solution
+
+          //If the modified bruteforce solution is incorrect (i.e., doesn't equal the bruteforce solution) add it to the relevant discrepancies array
+          if(bruteforceSolution.density != mbruteforceSolution.density) discrepancies.mbruteforce.push({graph, bruteforceSolution, mbruteforceSolution, index: i});
+          //If the deconstruction solution is incorrect (i.e., doesn't equal the bruteforce solution) add it to the relevant discrepancies array
+          if(bruteforceSolution.density != deconstructSolution.density) discrepancies.deconstruct.push({graph, bruteforceSolution, deconstructSolution, index: i});
+          //If the construction solution is incorrect (i.e., doesn't equal the bruteforce solution) add it to the relevant discrepancies array
+          if(bruteforceSolution.density != constructSolution.density) discrepancies.construct.push({graph, bruteforceSolution, constructSolution, index: i});
+        });
+
+        //This code just displays the findings on the web page
+        document.querySelector("#mbruteforce-result .text").innerText = discrepancies.mbruteforce.length + " (" + (100 - ((discrepancies.mbruteforce.length / graphs.length)*100)).toFixed(2) + "% accurate)";
+        document.querySelector("#deconstruction-result .text").innerText = discrepancies.deconstruct.length + " (" + (100 - ((discrepancies.deconstruct.length / graphs.length)*100)).toFixed(2) + "% accurate)";;
+        document.querySelector("#construction-result .text").innerText = discrepancies.construct.length + " (" + (100 - ((discrepancies.construct.length / graphs.length)*100)).toFixed(2) + "% accurate)";;
+      });
+
+    </script>
+  </body>
+</html>
